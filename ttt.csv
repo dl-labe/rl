@@ -1,0 +1,64 @@
+"import random
+
+class TicTacToe:
+    def _init_(self):
+        self.board = [['-' for _ in range(3)] for _ in range(3)]
+        self.players = ['X', 'O']
+        self.current_player = random.choice(self.players)
+
+    def make_move(self, row, col):
+        if self.board[row][col] != '-':
+            raise ValueError('Invalid move')
+        self.board[row][col] = self.current_player
+
+    def get_winner(self):
+        for row in range(3):
+            if self.board[row][0] == self.board[row][1] == self.board[row][2] != '-':
+                return self.board[row][0]
+            if self.board[0][row] == self.board[1][row] == self.board[2][row] != '-':
+                return self.board[0][row]
+            if self.board[0][0] == self.board[1][1] == self.board[2][2] != '-':
+                return self.board[0][0]
+            if self.board[0][2] == self.board[1][1] == self.board[2][0] != '-':
+                return self.board[0][2]
+        return None
+
+    def is_game_over(self):
+        winner = self.get_winner()
+        if winner is not None:
+            return True
+        for row in range(3):
+            for col in range(3):
+                if self.board[row][col] == '-':
+                    return False
+        return True
+
+    def get_current_player(self):
+        return self.current_player
+
+    def switch_players(self):
+        self.current_player = self.players[self.players.index(self.current_player) ^ 1]
+
+    def _str_(self):
+        return '\n'.join([' | '.join(row) for row in self.board])
+
+def main():
+    game = TicTacToe()
+    while not game.is_game_over():
+        print(game)
+        print(f'Current player: {game.get_current_player()}')
+        row, col = input('Enter your move (row, col): ').split()
+        try:
+            game.make_move(int(row), int(col))
+        except ValueError as e:
+            print(e)
+        game.switch_players()
+
+    winner = game.get_winner()
+    if winner is not None:
+        print(f'Winner: {winner}')
+    else:
+        print('Tie game!')
+
+if _name_ == '_main_':
+    main()"
