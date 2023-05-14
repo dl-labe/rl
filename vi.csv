@@ -1,0 +1,44 @@
+"import numpy as np
+
+class ValueIterationAgent:
+    def _init_(self, env):
+        self.env = env
+        self.num_states = env.observation_space.n
+        self.num_actions = env.action_space.n
+        self.V = np.zeros(self.num_states)
+        self.gamma = 0.9
+
+    def get_action(self, state):
+        q_values = self.Q[state]
+        action = np.argmax(q_values)
+        return action
+
+    def learn(self):
+        while True:
+            # Update all state values
+            for state in range(self.num_states):
+                # Get all possible next states and rewards
+                next_states = []
+                rewards = []
+                for action in range(self.num_actions):
+                    next_state, reward, done, _ = self.env.step(action)
+                    next_states.append(next_state)
+                    rewards.append(reward)
+
+                # Update the value of the current state
+                self.V[state] = np.max(rewards + self.gamma * self.V[next_states])
+
+            # Check for convergence
+            if np.allclose(self.V, self.V_prev):
+                break
+
+            self.V_prev = self.V
+
+    def train(self, num_episodes):
+        for episode in range(num_episodes):
+            state = self.env.reset()
+            while not self.env.done:
+                action = self.get_action(state)
+                next_state, reward, done, _ = self.env.step(action)
+                self.learn()
+                state = next_state"
