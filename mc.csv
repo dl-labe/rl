@@ -1,0 +1,40 @@
+"import numpy as np
+
+class MCPolicyControlAgent:
+    def _init_(self, env):
+        self.env = env
+        self.num_states = env.observation_space.n
+        self.num_actions = env.action_space.n
+        self.policy = np.ones((self.num_states, self.num_actions)) / self.num_actions
+        self.V = np.zeros(self.num_states)
+        self.gamma = 0.9
+
+    def get_action(self, state):
+        return np.random.choice(self.num_actions, p=self.policy[state])
+
+    def learn(self, episode):
+        # Get all rewards from the episode
+        rewards = []
+        for t in range(len(episode) - 1):
+            rewards.append(episode[t + 1][2])
+
+        # Update the value function
+        for state in range(self.num_states):
+            self.V[state] = np.sum(rewards + self.gamma * self.V[episode[episode.index(state) + 1][1]])
+
+        # Update the policy
+        for state in range(self.num_states):
+            for action in range(self.num_actions):
+                next_state, reward, done, _ = self.env.step(action)
+                self.policy[state][action] = (1 - self.alpha) * self.policy[state][action] + self.alpha * (reward + self.gamma * self.V[next_state])
+
+    def train(self, num_episodes):
+        for episode in range(num_episodes):
+            state = self.env.reset()
+            episode.append((state, None, None))
+            while not self.env.done:
+                action = self.get_action(state)
+                next_state, reward, done, _ = self.env.step(action)
+                episode.append((state, action, reward))
+                state = next_state
+            self.learn(episode)"
