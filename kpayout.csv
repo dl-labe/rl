@@ -1,0 +1,28 @@
+"import random
+
+# Create a list of arms
+arms = [1, 2, 3, 4, 5]
+
+# Set the payout rate for each arm
+payout_rate = [0.1, 0.2, 0.3, 0.4, 0.5]
+total_wins=0
+# Simulate playing the machine 1000 times
+for i in range(1000):
+
+    # Choose an arm at random
+    chosen_arm = random.choice(arms)
+
+    # Play the arm
+    if random.random() < payout_rate[min(chosen_arm, 4)]:
+        win = 1
+    else:
+        win = 0
+
+
+    # Add the win to the total
+    total_wins += win
+
+# Calculate the payout rate
+payout_rate = total_wins / 1000
+
+print(""The payout rate is"", payout_rate)"

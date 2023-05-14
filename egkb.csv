@@ -1,0 +1,39 @@
+"import random
+import numpy as np
+
+# Create a list of arms
+arms = range(10)
+
+# Set the payout rate for each arm
+payout_rate = np.random.normal(0, 1, size=10)
+
+# Create a list to store the rewards
+rewards = []
+
+# Set the epsilon value
+epsilon = 0.1
+
+# Simulate playing the machine 1000 times
+for i in range(1000):
+
+    # Choose an arm at random
+    if random.random() < epsilon:
+        chosen_arm = random.choice(arms)
+    else:
+        chosen_arm = np.argmax(payout_rate)
+
+    # Play the arm
+    reward = np.random.normal(payout_rate[chosen_arm], 1)
+
+
+    # Add the reward to the list
+    rewards.append(reward)
+
+# Calculate the average reward
+average_reward = np.mean(rewards)
+
+# Plot the average reward
+plt.plot([0, 0.1, 0.01], [average_reward, average_reward, average_reward])
+plt.xlabel(""Epsilon"")
+plt.ylabel(""Average Reward"")
+plt.show()"
