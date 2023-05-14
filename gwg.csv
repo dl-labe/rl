@@ -1,0 +1,70 @@
+"import gym
+import numpy as np
+import time
+
+
+def gymActivation(grid):
+    env = gym.make('FrozenLake-v1', desc=grid, map_name=""4x4"", is_slippery=False)
+    qtable = np.zeros((env.observation_space.n, env.action_space.n))
+
+    episodes = 9000
+    alpha = 0.5
+    gamma = 0.9
+    outcomes = []
+
+    for _ in range(episodes):
+        state = env.reset()[0]
+        done = False
+        outcomes.append(""Failure"")
+
+        while not done:
+            if np.max(qtable[state]) > 0:
+                action = np.argmax(qtable[state])
+            else:
+                action = env.action_space.sample()
+
+            new_state, reward, done, info,_ = env.step(action)
+
+            qtable[state, action] = qtable[state, action] + \
+                                    alpha * (reward + gamma * np.max(qtable[new_state]) - qtable[state, action])
+
+            state = new_state
+
+            if reward:
+                outcomes[-1] = ""Success""
+
+    return env, qtable
+
+
+def seq(env, qtable):
+    state = env.reset()[0]
+    done = False
+    sequence = []
+
+    while not done:
+        if np.max(qtable[state]) > 0:
+            action = np.argmax(qtable[state])
+
+        else:
+            action = env.action_space.sample()
+
+        sequence.append(action)
+        new_state, reward, done, info,_= env.step(action)
+
+        state = new_state
+
+        time.sleep(1)
+
+    return sequence
+#     S = Start
+#     G = Goal
+#     F = Frozen Lake / surface
+#     H =
+
+grid = [""SFFF"",
+        ""FHFH"",
+        ""FFFH"",
+        ""HFFG""]
+env, qtable = gymActivation(grid)
+sequence = seq(env, qtable)
+sequence"
