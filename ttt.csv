@@ -1,64 +1,62 @@
-"import random
+"import gym
+from gym import spaces
+import numpy as np
 
-class TicTacToe:
+class TicTacToeEnv(gym.Env):
     def _init_(self):
-        self.board = [['-' for _ in range(3)] for _ in range(3)]
-        self.players = ['X', 'O']
-        self.current_player = random.choice(self.players)
-
-    def make_move(self, row, col):
-        if self.board[row][col] != '-':
-            raise ValueError('Invalid move')
-        self.board[row][col] = self.current_player
-
-    def get_winner(self):
-        for row in range(3):
-            if self.board[row][0] == self.board[row][1] == self.board[row][2] != '-':
-                return self.board[row][0]
-            if self.board[0][row] == self.board[1][row] == self.board[2][row] != '-':
-                return self.board[0][row]
-            if self.board[0][0] == self.board[1][1] == self.board[2][2] != '-':
-                return self.board[0][0]
-            if self.board[0][2] == self.board[1][1] == self.board[2][0] != '-':
-                return self.board[0][2]
-        return None
-
-    def is_game_over(self):
-        winner = self.get_winner()
-        if winner is not None:
+        self.board = np.zeros((3, 3))
+        self.current_player = 1
+        self.action_space = spaces.Discrete(9)
+        self.observation_space = spaces.Box(low=-1, high=1, shape=(3, 3), dtype=np.float32)
+    
+    def reset(self):
+        self.board = np.zeros((3, 3))
+        self.current_player = 1
+        return self.board
+    
+    def step(self, action):
+        x = action // 3
+        y = action % 3
+        if self.board[x][y] != 0:
+            return self.board, -1, False, {}
+        
+        self.board[x][y] = self.current_player
+        
+        if self.check_winner():
+            return self.board, 1, True, {}
+        
+        if self.check_draw():
+            return self.board, 0, True, {}
+        
+        self.current_player = -self.current_player
+        return self.board, 0, False, {}
+    
+    def check_winner(self):
+        for i in range(3):
+            if self.board[i][0] == self.board[i][1] == self.board[i][2] != 0:
+                return True
+            if self.board[0][i] == self.board[1][i] == self.board[2][i] != 0:
+                return True
+        if self.board[0][0] == self.board[1][1] == self.board[2][2] != 0:
             return True
-        for row in range(3):
-            for col in range(3):
-                if self.board[row][col] == '-':
-                    return False
-        return True
-
-    def get_current_player(self):
-        return self.current_player
-
-    def switch_players(self):
-        self.current_player = self.players[self.players.index(self.current_player) ^ 1]
-
-    def _str_(self):
-        return '\n'.join([' | '.join(row) for row in self.board])
-
-def main():
-    game = TicTacToe()
-    while not game.is_game_over():
-        print(game)
-        print(f'Current player: {game.get_current_player()}')
-        row, col = input('Enter your move (row, col): ').split()
-        try:
-            game.make_move(int(row), int(col))
-        except ValueError as e:
-            print(e)
-        game.switch_players()
-
-    winner = game.get_winner()
-    if winner is not None:
-        print(f'Winner: {winner}')
-    else:
-        print('Tie game!')
-
-if _name_ == '_main_':
-    main()"
+        if self.board[2][0] == self.board[1][1] == self.board[0][2] != 0:
+            return True
+        return False
+    
+    def check_draw(self):
+        return np.all(self.board != 0) and not self.check_winner()
+    
+    def render(self, mode='console'):
+        if mode != 'console':
+            raise NotImplementedError()
+        print(self.board)
+        
+env = TicTacToeEnv()
+observation = env.reset()
+done = False
+while not done:
+    env.render()
+    action = env.action_space.sample()
+    observation, reward, done, info = env.step(action)
+    print(reward)
+env.render()"
