@@ -1,39 +1,51 @@
-"import random
-import numpy as np
+"import numpy as np
+import matplotlib.pyplot as plt
 
-# Create a list of arms
-arms = range(10)
 
-# Set the payout rate for each arm
-payout_rate = np.random.normal(0, 1, size=10)
-
-# Create a list to store the rewards
-rewards = []
-
-# Set the epsilon value
-epsilon = 0.1
-
-# Simulate playing the machine 1000 times
-for i in range(1000):
-
-    # Choose an arm at random
-    if random.random() < epsilon:
-        chosen_arm = random.choice(arms)
+num_arms = 10
+arms_mean = np.random.normal(0, 1, num_arms)
+def epsilon_greedy(Q, epsilon):
+    if np.random.uniform(0, 1) < epsilon:
+        
+        action = np.random.choice(num_arms)
     else:
-        chosen_arm = np.argmax(payout_rate)
+      
+        action = np.argmax(Q)
+    return action
 
-    # Play the arm
-    reward = np.random.normal(payout_rate[chosen_arm], 1)
+
+def run_bandit(epsilon):
+    
+    Q = np.zeros(num_arms)
+    
+    N = np.zeros(num_arms)
+    
+    total_reward = 0
+    avg_reward = np.zeros(1000)
+    
+    for episode in range(1000):
+        
+        action = epsilon_greedy(Q, epsilon)
+        
+        reward = np.random.normal(arms_mean[action], 1)
+        
+        N[action] += 1
+        Q[action] += (reward - Q[action]) / N[action]
+        
+        total_reward += reward
+        avg_reward[episode] = total_reward / (episode + 1)
+    return avg_reward
 
 
-    # Add the reward to the list
-    rewards.append(reward)
+avg_reward_0 = run_bandit(0)
+avg_reward_01 = run_bandit(0.1)
+avg_reward_001 = run_bandit(0.01)
 
-# Calculate the average reward
-average_reward = np.mean(rewards)
 
-# Plot the average reward
-plt.plot([0, 0.1, 0.01], [average_reward, average_reward, average_reward])
-plt.xlabel(""Epsilon"")
-plt.ylabel(""Average Reward"")
+plt.plot(avg_reward_0, label='epsilon=0')
+plt.plot(avg_reward_01, label='epsilon=0.1')
+plt.plot(avg_reward_001, label='epsilon=0.01')
+plt.xlabel('Episode')
+plt.ylabel('Average Reward')
+plt.legend()
 plt.show()"
