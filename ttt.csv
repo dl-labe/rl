@@ -1,66 +1,62 @@
-"import numpy as np
+"import gym
+from gym import spaces
+import numpy as np
 
-class tic_tac_toe_game(object):
-    def _init_(self):
-        self.board=np.full((3,3),2)
-
-    def toss(self):
+class TicTacToeEnv(gym.Env):
+    def __init__(self):
+        self.board = np.zeros((3, 3))
+        self.current_player = 1
+        self.action_space = spaces.Discrete(9)
+        self.observation_space = spaces.Box(low=-1, high=1, shape=(3, 3), dtype=np.float32)
+    
+    def reset(self):
+        self.board = np.zeros((3, 3))
+        self.current_player = 1
+        return self.board
+    
+    def step(self, action):
+        x = action // 3
+        y = action % 3
+        if self.board[x][y] != 0:
+            return self.board, -1, False, {}
         
-        turn=np.random.randint(0,2,size=1)
-        if turn.mean()==0:
-            self.turn_monitor=0
-        elif turn.mean()==1:
-            self.turn_monitor=1
-        return self.turn_monitor
-
-    def move(self,player,coord):
-       
-        if self.board[coord]!=2 or self.game_status()!=""In Progress"" or self.turn_monitor!=player:
-            raise ValueError(""Invalid move"")
-        self.board[coord]=player
-        self.turn_monitor=1-player
-        return self.game_status(),self.board
-
-
-    def game_status(self):
-                #check for a win along rows
-        for i in range(self.board.shape[0]):
-            if 2 not in self.board[i,:] and len(set(self.board[i,:]))==1:
-                return ""Won""
-        #check for a win along columns
-        for j in range(self.board.shape[1]):
-            if 2 not in self.board[:,j] and len(set(self.board[:,j]))==1:
-                return ""Won""
-        # check for a win along diagonals
-        if 2 not in np.diag(self.board) and len(set(np.diag(self.board)))==1:
-            return ""Won""
-        if 2 not in np.diag(np.fliplr(self.board)) and len(set(np.diag(np.fliplr(self.board))))==1:
-            return ""Won""
-        # check for a Draw
-        if not 2 in self.board:
-            return ""Drawn""
-        else:
-            return ""In Progress""
-
-game=tic_tac_toe_game()
-
-game.toss()
-print(""Player "",game.turn_monitor,"" has won the toss"")
-
-print(""Initial board state \n"",game.board)
-print(""Let first player place their mark on 0,0"")
-game_status,board=game.move(game.turn_monitor,(0,0))
-print(""New Board State: \n"",board)
-print(""Let second player place their mark on 0,1"")
-game_status,board=game.move(game.turn_monitor,(0,1))
-print(""New Board State: \n"",board)
-print(""Let first player place their mark on 1,1"")
-game_status,board=game.move(game.turn_monitor,(1,1))
-print(""New Board State: \n"",board)
-print(""Let second player place their mark on 0,2"")
-game_status,board=game.move(game.turn_monitor,(0,2))
-print(""New Board State: \n"",board)
-print(""Let first player place their mark on 2,2"")
-game_status,board=game.move(game.turn_monitor,(2,2))
-print(""New Board State: \n"",board)
-print(""Player "",1-game.turn_monitor,"" Has "",game_status)"
+        self.board[x][y] = self.current_player
+        
+        if self.check_winner():
+            return self.board, 1, True, {}
+        
+        if self.check_draw():
+            return self.board, 0, True, {}
+        
+        self.current_player = -self.current_player
+        return self.board, 0, False, {}
+    
+    def check_winner(self):
+        for i in range(3):
+            if self.board[i][0] == self.board[i][1] == self.board[i][2] != 0:
+                return True
+            if self.board[0][i] == self.board[1][i] == self.board[2][i] != 0:
+                return True
+        if self.board[0][0] == self.board[1][1] == self.board[2][2] != 0:
+            return True
+        if self.board[2][0] == self.board[1][1] == self.board[0][2] != 0:
+            return True
+        return False
+    
+    def check_draw(self):
+        return np.all(self.board != 0) and not self.check_winner()
+    
+    def render(self, mode='console'):
+        if mode != 'console':
+            raise NotImplementedError()
+        print(self.board)
+        
+env = TicTacToeEnv()
+observation = env.reset()
+done = False
+while not done:
+    env.render()
+    action = env.action_space.sample()
+    observation, reward, done, info = env.step(action)
+    print(reward)
+env.render()"
